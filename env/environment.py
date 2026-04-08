@@ -1,4 +1,3 @@
-from models.observation import Observation
 from models.action import Action
 
 class EmailEnv:
