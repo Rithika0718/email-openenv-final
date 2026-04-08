@@ -6,14 +6,11 @@ API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-mini")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
-client = OpenAI(
-    base_url=API_BASE_URL,
-    api_key=HF_TOKEN
-)
+client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
 
 def run_inference():
     env = EmailEnv()
-    obs = env.reset()
+    obs = env.reset(None)  # accept task param
 
     print(f"[START] task=email env=openenv model={MODEL_NAME}")
 
