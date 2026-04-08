@@ -2,7 +2,7 @@ class EmailEnv:
     def __init__(self):
         self.step_count = 0
 
-    def reset(self):
+    def reset(self, task=None)::
         self.step_count = 0
         return {
             "email": "Congratulations! You won a prize. Click here now!"
