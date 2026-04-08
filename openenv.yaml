@@ -1,0 +1,29 @@
+name: email-assistant-env
+description: A real-world email management environment where an AI agent classifies, prioritizes, and responds to emails.
+version: 1.0.0
+
+entry_point: env.environment:EmailEnv
+
+tasks:
+  - name: easy
+    description: Classify email as spam/work/personal
+
+  - name: medium
+    description: Classify and assign priority to emails
+
+  - name: hard
+    description: Classify, prioritize, and generate appropriate reply
+
+observation_space:
+  type: object
+  properties:
+    email_text: string
+    sender: string
+    urgency: string
+    step_count: integer
+
+action_space:
+  type: object
+  properties:
+    action_type: string
+    value: string
