@@ -2,11 +2,32 @@ import os
 from openai import OpenAI
 from env.environment import EmailEnv
 
-API_BASE_URL = os.getenv("API_BASE_URL", "https://api.openai.com/v1")
+API_BASE_URL = os.environ["API_BASE_URL"]
+API_KEY = os.environ["API_KEY"]
 MODEL_NAME = os.getenv("MODEL_NAME", "gpt-4.1-mini")
-HF_TOKEN = os.getenv("HF_TOKEN")
 
-client = OpenAI(base_url=API_BASE_URL, api_key=HF_TOKEN)
+client = OpenAI(
+    base_url=API_BASE_URL,
+    api_key=API_KEY
+)
+
+def choose_action(observation):
+    prompt = (
+        "Classify the email.\n"
+        "Return only: spam or not_spam.\n\n"
+        f"{observation}"
+    )
+
+    response = client.chat.completions.create(
+        model=MODEL_NAME,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0
+    )
+
+    result = response.choices[0].message.content.strip().lower()
+    if result not in ["spam", "not_spam"]:
+        return "spam"
+    return result
 
 def run_inference():
     env = None
@@ -24,15 +45,20 @@ def run_inference():
         while not done:
             step += 1
 
-            action_value = "spam"
-            action = {"value": action_value}
+            try:
+                action_value = choose_action(obs)
+            except Exception:
+                action_value = "spam"
 
-            obs, reward, done, info = env.step(action)
-            rewards.append(f"{reward:.2f}")
+            try:
+                obs, reward, done, info = env.step({"value": action_value})
+                rewards.append(f"{reward:.2f}")
 
-            print(f"[STEP] step={step} action=classify('{action_value}') reward={reward:.2f} done={str(done).lower()} error=null")
+                print(f"[STEP] step={step} action=classify('{action_value}') reward={reward:.2f} done={str(done).lower()} error=null")
 
-            if step >= 5:
+            except Exception as e:
+                rewards.append("0.00")
+                print(f"[STEP] step={step} action=classify('{action_value}') reward=0.00 done=false error={str(e)}")
                 break
 
         success = done
@@ -41,10 +67,10 @@ def run_inference():
         success = False
 
     finally:
-        if env:
+        if env is not None:
             try:
                 env.close()
-            except:
+            except Exception:
                 pass
 
         print(f"[END] success={str(success).lower()} steps={step} rewards={','.join(rewards)}")
